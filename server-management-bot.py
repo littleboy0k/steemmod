@@ -8,6 +8,8 @@ import platform
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not.
 client = Bot(description="Placeholder", command_prefix="!", pm_help = True)
 
+# Add your channels there, by ID. This will be necessary for moving around the server.
+
 channels_list = ['389762510779187200', #introduceyourself
 '389608804972756993', #steemit
 '389762038408282112', #bitcoin
@@ -56,9 +58,9 @@ async def on_message(message):
 
 	while True:
 		res = await client.wait_for_reaction(['☑'], message=msg)
-		if "whatever" in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
+		if "Moderators" in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
 			await client.delete_message(msg)
-			await client.send_message(client.get_channel('391089062947061763'), content=msgaut + ' sent: ' + msgcon) # Target channel for accepted posts.
+			await client.send_message(client.get_channel(channels_list[12]), content=msgaut + ' sent: ' + msgcon) # Target channel for accepted posts.
 			await client.process_commands(message)
 			break
 		else:
