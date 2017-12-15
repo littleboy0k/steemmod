@@ -55,25 +55,23 @@ async def on_message(message):
 	msg = message
 	msgcon = msg.content
 	msgaut = '@' + msg.author.name
-	if "steemit-moderator" not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels:
-		if message.content.startswith('https://steemit') or message.content.startswith('steemit'):
-			
-			tempmsg = await client.send_message(message.channel, 'Your submition awaits for Moderator\'s feedback')
 
+	if "steemit-moderator" not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels:
+		if message.content.startswith('https://steemit') or message.content.startswith('steemit'): # The required beggining of a text for it to be considered not spam.			
+			tempmsg = await client.send_message(message.channel, 'Your submition awaits for Moderator\'s feedback') # Return message after a correct submition.
+			
 			res = await client.wait_for_reaction(['☑'], message=msg)
 			if "developers" in [y.name.lower() for y in res.user.roles] or "moderators" in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
 				await client.delete_message(msg)
 				await client.delete_message(tempmsg)
-				await client.send_message(client.get_channel(channels_list[12]), content=msgaut + ' sent: ' + msgcon) # Target channel for accepted posts.
+				await client.send_message(client.get_channel(channels_list[12]), content=msgaut + ' sent: ' + msgcon) # Target channel for accepted posts, check the number of desired channel in the list on top of the code.
 		
 		elif message.content.startswith('!ping') and "developers" in [y.name.lower() for y in message.author.roles] or "moderators" in [y.name.lower() for y in message.author.roles]:
-			await client.send_message(message.channel, ':ping_pong: Pong!')
+			await client.send_message(message.channel, ':ping_pong: Pong! I\'m live and working correctly!')
 
 		else:
 			await client.delete_message(msg)
-			await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "steemit"')
-
-# After you have modified the code, feel free to delete the line above (line 33) so it does not keep popping up everytime you initiate the ping commmand.
+			await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "steemit"') # Return text for a incorrect sumbition.
 	
 client.run('MzkxMDczNjgzNTk2MjQ3MDQw.DRTbpQ.0kipdJjxdKSlERdeKkzSt11tut8')
 
