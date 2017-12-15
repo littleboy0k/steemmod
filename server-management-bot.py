@@ -8,6 +8,8 @@ import platform
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not.
 client = Bot(description="Placeholder", command_prefix="!", pm_help = True)
 
+# Add your channels there, by ID. This will be necessary for moving around the server.
+
 channels_list = ['389762510779187200', #introduceyourself
 '389608804972756993', #steemit
 '389762038408282112', #bitcoin
@@ -43,10 +45,6 @@ async def on_ready():
 	print('Steemit profile: https://steemit.com/@jestemkioskiem')
 
 # This is a basic example of a call and response command. You tell it do "this" and it does it.
-@client.command()
-async def ping(*args):
-	await client.say(":ping_pong: Pong!")
-	await asyncio.sleep(3)
 
 @client.event
 async def on_message(message):
@@ -54,15 +52,22 @@ async def on_message(message):
 	msgcon = msg.content
 	msgaut = '@' + msg.author.name
 
-	while True:
+	if message.content.startswith('https://steemit') or message.content.startswith('steemit'):
+		
+		tempmsg = await client.send_message(message.channel, 'Your submition awaits for Moderator\'s feedback')
+
 		res = await client.wait_for_reaction(['☑'], message=msg)
-		if "whatever" in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
+		if "developers" in [y.name.lower() for y in res.user.roles] or "moderators" in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
 			await client.delete_message(msg)
-			await client.send_message(client.get_channel('391089062947061763'), content=msgaut + ' sent: ' + msgcon) # Target channel for accepted posts.
-			await client.process_commands(message)
-			break
-		else:
-			continue
+			await client.delete_message(tempmsg)
+			await client.send_message(client.get_channel(channels_list[12]), content=msgaut + ' sent: ' + msgcon) # Target channel for accepted posts.
+	
+	elif message.content.startswith('!ping') and "developers" in [y.name.lower() for y in message.author.roles] or "moderators" in [y.name.lower() for y in message.author.roles]:
+		await client.send_message(message.channel, ':ping_pong: Pong!')
+
+	elif "steemit-moderator" not in [y.name.lower() for y in message.author.roles]:
+		await client.delete_message(msg)
+		await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "steemit"')
 
 # After you have modified the code, feel free to delete the line above (line 33) so it does not keep popping up everytime you initiate the ping commmand.
 	
