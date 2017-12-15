@@ -25,6 +25,10 @@ channels_list = ['389762510779187200', #introduceyourself
 '389764366456586240' #all-other
 ]
 
+allowed_channels = ['387030201961545728', #community-review
+
+]
+
 # This is what happens everytime the bot launches. In this case, it prints information like server count, user count the bot is connected to, and the bot id in the console.
 # Do not mess with it because the bot can break, if you wish to do so, please consult me or someone trusted.
 @client.event
@@ -51,7 +55,7 @@ async def on_message(message):
 	msg = message
 	msgcon = msg.content
 	msgaut = '@' + msg.author.name
-	if "steemit-moderator" not in [y.name.lower() for y in message.author.roles] and message.channel == client.get_channel('387030201961545728'):
+	if "steemit-moderator" not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels:
 		if message.content.startswith('https://steemit') or message.content.startswith('steemit'):
 			
 			tempmsg = await client.send_message(message.channel, 'Your submition awaits for Moderator\'s feedback')
