@@ -4,9 +4,14 @@ import asyncio
 from discord.ext.commands import Bot
 from discord.ext import commands
 import platform
+from steem import Steem
+from steem.post import Post
+import datetime
 
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not.
 client = Bot(description="Placeholder", command_prefix="!", pm_help = True)
+s = Steem()
+sp = Post('@jestemkioskiem/using-dtube-playlistname-as-tags-to-group-videos-into-playlists')
 
 # Add your channels there, by ID. This will be necessary for moving around the server.
 
@@ -54,14 +59,23 @@ async def on_message(message):
 
 	if message.content.startswith('https://steemit') or message.content.startswith('steemit'):
 		
-		tempmsg = await client.send_message(message.channel, 'Your submition awaits for Moderator\'s feedback')
+		smsgcon = msgcon.split('@')[1]
+		tmsgcon = msgcon.split('/')[3]
+		sp = Post(smsgcon)
+		if sp.time_elapsed() > datetime.timedelta(hours=2) and sp.time_elapsed() < datetime.timedelta(hours=48):
+			tempmsg = await client.send_message(message.channel, 'Your submition awaits for Moderator\'s feedback')
 
-		res = await client.wait_for_reaction(['☑'], message=msg)
-		if "developers" in [y.name.lower() for y in res.user.roles] or "moderators" in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
+			res = await client.wait_for_reaction(['☑'], message=msg)
+			if "developers" in [y.name.lower() for y in res.user.roles] or "moderators" in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
+				await client.delete_message(msg)
+				await client.delete_message(tempmsg)
+
+				await client.send_message(client.get_channel(channels_list[12]), content=msgaut + ' sent: ' + msgcon) # Target channel for accepted posts.
+		
+		else:
+			tempmsg = await client.send_message(message.channel, 'Your post has to be between 2h and 48h old.')
 			await client.delete_message(msg)
-			await client.delete_message(tempmsg)
-			await client.send_message(client.get_channel(channels_list[12]), content=msgaut + ' sent: ' + msgcon) # Target channel for accepted posts.
-	
+
 	elif message.content.startswith('!ping') and "developers" in [y.name.lower() for y in message.author.roles] or "moderators" in [y.name.lower() for y in message.author.roles]:
 		await client.send_message(message.channel, ':ping_pong: Pong!')
 
