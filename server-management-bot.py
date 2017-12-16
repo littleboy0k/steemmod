@@ -107,11 +107,11 @@ async def on_message(message):
 		elif message.content.startswith('!ping') and moderating_roles[0] in [y.name.lower() for y in message.author.roles] or moderating_roles[1] in [y.name.lower() for y in message.author.roles]: # Ping to test if bot is responsive
 			await client.send_message(message.channel, ':ping_pong: Pong!')
 
-		elif "steemit-moderator" not in [y.name.lower() for y in message.author.roles]: # Removing the post if it's not a steemit link
+		elif bot_role not in [y.name.lower() for y in message.author.roles]: # Removing the post if it's not a steemit link
 			await client.delete_message(msg)
 			await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "steemit"')
 	
-client.run('MzkxMDczNjgzNTk2MjQ3MDQw.DRYGSg._vEB3EYin6C_SeEAiHzrDwiXQ-w') # <----------- PUT YOUR BOT'S TOKEN HERE
+client.run('') # <----------- PUT YOUR BOT'S TOKEN HERE
 
 # Basic Bot was created by Habchy#1665
 # Please join this Discord server if you need help: https://discord.gg/FNNNgqb
