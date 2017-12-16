@@ -49,7 +49,7 @@ allowed_channels = ['387030201961545728', #community-review
 moderating_roles = ['moderators', # Keep them lower case.
 'developers']
 
-bot_role = steemit-moderator # Set your bot's role here.
+bot_role = 'steemit-moderator' # Set your bot's role here.
 
 # This is what happens everytime the bot launches. In this case, it prints information like server count, user count the bot is connected to, and the bot id in the console.
 # Do not mess with it because the bot can break, if you wish to do so, please consult me or someone trusted.
