@@ -46,6 +46,11 @@ allowed_channels = ['387030201961545728', #community-review
 
 ]
 
+moderating_roles = ['moderators', # Keep them lower case.
+'developers']
+
+bot_role = 'steemit-moderator' # Set your bot's role here.
+
 # This is what happens everytime the bot launches. In this case, it prints information like server count, user count the bot is connected to, and the bot id in the console.
 # Do not mess with it because the bot can break, if you wish to do so, please consult me or someone trusted.
 @client.event
@@ -65,31 +70,30 @@ async def on_ready():
 	print('--------')
 	print('Steemit profile: https://steemit.com/@jestemkioskiem')
 
-# This is a basic example of a call and response command. You tell it do "this" and it does it.
+# This is our event check. For simplicity's sake, everything happens here. You may add your own events, but commands are discouraged.
 
 @client.event
 async def on_message(message):
 	msg = message
 	msgcon = msg.content
-	msgaut = '@' + msg.author.name
+	msgaut = '@' + msg.author.name # Setting some variables for Quality of life purposes.
 
-	if "steemit-moderator" not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels:
+	if bot_role not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels: # Checking if the poster wasn't the bot and if it was in one of the monitored channels.
 
 		if message.content.startswith('https://steemit') or message.content.startswith('steemit'): # The required beggining of a text for it to be considered not spam.			
 			smsgcon = msgcon.split('@')[1]
 			tmsgcon = msgcon.split('/')[3]
-			
 			sp = Post(smsgcon)
 
-			if sp.time_elapsed() > datetime.timedelta(hours=2) and sp.time_elapsed() < datetime.timedelta(hours=48):
+			if sp.time_elapsed() > datetime.timedelta(hours=2) and sp.time_elapsed() < datetime.timedelta(hours=48): # Checking if post is older than 2h and younger than 48h
 				tempmsg = await client.send_message(message.channel, 'The post is ' + str(sp.time_elapsed())[:-7] + ' hours old and earned ' + str(sp.reward))
 
-				res = await client.wait_for_reaction(['☑'], message=msg)
-				if "developers" in [y.name.lower() for y in res.user.roles] or "moderators" in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
+				res = await client.wait_for_reaction(['☑'], message=msg) # Waiting for the emote 
+				if moderating_roles[0] in [y.name.lower() for y in res.user.roles] or moderating_roles[1] in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
 					await client.delete_message(msg)
 					await client.delete_message(tempmsg)
 
-					if tmsgcon in tag_list:
+					if tmsgcon in tag_list: # Sorting the item into a correct channel
 						dest_channel = tag_list.index(tmsgcon)
 					else:
 						dest_channel = tag_list.len()
@@ -100,20 +104,22 @@ async def on_message(message):
 				tempmsg = await client.send_message(message.channel, 'Your post has to be between 2h and 48h old.')
 				await client.delete_message(msg)
 
-		elif message.content.startswith('!ping') and "developers" in [y.name.lower() for y in message.author.roles] or "moderators" in [y.name.lower() for y in message.author.roles]:
+		elif message.content.startswith('!ping') and moderating_roles[0] in [y.name.lower() for y in message.author.roles] or moderating_roles[1] in [y.name.lower() for y in message.author.roles]: # Ping to test if bot is responsive
 			await client.send_message(message.channel, ':ping_pong: Pong!')
 
-		elif "steemit-moderator" not in [y.name.lower() for y in message.author.roles]:
+		elif bot_role not in [y.name.lower() for y in message.author.roles]: # Removing the post if it's not a steemit link
 			await client.delete_message(msg)
 			await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "steemit"')
 	
-client.run('MzkxMDczNjgzNTk2MjQ3MDQw.DRTbpQ.0kipdJjxdKSlERdeKkzSt11tut8')
+client.run('') # <----------- PUT YOUR BOT'S TOKEN HERE
 
 # Basic Bot was created by Habchy#1665
 # Please join this Discord server if you need help: https://discord.gg/FNNNgqb
 # Please modify the parts of the code where it asks you to. Example: The Prefix or The Bot Token
 # This is by no means a full bot, it's more of a starter to show you what the python language can do in Discord.
 # Thank you for using this and don't forget to star my repo on GitHub! [Repo Link: https://github.com/Habchy/BasicBot]
+
+# STEEM's functionality was coded by Vctr#5566, or @jestemkioskiem on steem and steem chat. Contact him if you have any questions.
 
 # The help command is currently set to be Direct Messaged.
 # If you would like to change that, change "pm_help = True" to "pm_help = False" on line 9.
