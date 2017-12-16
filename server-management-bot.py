@@ -8,7 +8,7 @@ from steem import Steem
 from steem.post import Post
 import datetime
 
-# Here you can modify the bot's prefix and description and wether it sends help in direct messages or not.
+# Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. Commands are strongly discouraged and will require rewriting a lot of code.
 client = Bot(description="Placeholder", command_prefix="!", pm_help = True)
 s = Steem()
 
@@ -28,7 +28,7 @@ moderating_roles = ['', # Keep them lower case.
 bot_role = '' # Set your bot's role here.
 
 # This is what happens everytime the bot launches. In this case, it prints information like server count, user count the bot is connected to, and the bot id in the console.
-# Do not mess with it because the bot can break, if you wish to do so, please consult me or someone trusted.
+# Do not mess with it because the bot can break, if you wish to do so, please consult Habchy or someone trusted.
 @client.event
 async def on_ready():
 	print('Logged in as '+client.user.name+' (ID:'+client.user.id+') | Connected to '+str(len(client.servers))+' servers | Connected to '+str(len(set(client.get_all_members())))+' users')
@@ -90,6 +90,6 @@ async def on_message(message):
 client.run('') # <----------- PUT YOUR BOT'S TOKEN HERE!
 
 # Basic Bot was created by Habchy#1665
-# Thank you for using this and don't forget to star my repo on GitHub! [Repo Link: https://github.com/Habchy/BasicBot]
+# Thank you for using this and don't forget to star Habchy's repo on GitHub! [Repo Link: https://github.com/Habchy/BasicBot]
 
 # STEEM's functionality was coded by Vctr#5566, or @jestemkioskiem on steem and steem chat. Contact him if you have any questions.
