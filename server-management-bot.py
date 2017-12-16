@@ -11,7 +11,6 @@ import datetime
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not.
 client = Bot(description="Placeholder", command_prefix="!", pm_help = True)
 s = Steem()
-sp = Post('@jestemkioskiem/using-dtube-playlistname-as-tags-to-group-videos-into-playlists')
 
 # Add your channels there, by ID. This will be necessary for moving around the server.
 
@@ -27,7 +26,24 @@ channels_list = ['389762510779187200', #introduceyourself
 '389890366427627520', #technology
 '389890644551794688', #programming
 '389890578499764226', #tutorials
-'389764366456586240' #all-other
+'389764366456586240' #all_other
+]
+
+tag_list = ['introduceyourself',
+'steemit',
+'bitcoin',
+'cryptocurrency',
+'blog',
+'steem',
+'crypto',
+'health',
+'science',
+'technology',
+'programming',
+'tutorials']
+
+allowed_channels = ['387030201961545728', #community-review
+
 ]
 
 # This is what happens everytime the bot launches. In this case, it prints information like server count, user count the bot is connected to, and the bot id in the console.
@@ -57,33 +73,39 @@ async def on_message(message):
 	msgcon = msg.content
 	msgaut = '@' + msg.author.name
 
-	if message.content.startswith('https://steemit') or message.content.startswith('steemit'):
-		
-		smsgcon = msgcon.split('@')[1]
-		tmsgcon = msgcon.split('/')[3]
-		sp = Post(smsgcon)
-		if sp.time_elapsed() > datetime.timedelta(hours=2) and sp.time_elapsed() < datetime.timedelta(hours=48):
-			tempmsg = await client.send_message(message.channel, 'Your submition awaits for Moderator\'s feedback')
+	if "steemit-moderator" not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels:
 
-			res = await client.wait_for_reaction(['☑'], message=msg)
-			if "developers" in [y.name.lower() for y in res.user.roles] or "moderators" in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
+		if message.content.startswith('https://steemit') or message.content.startswith('steemit'): # The required beggining of a text for it to be considered not spam.			
+			smsgcon = msgcon.split('@')[1]
+			tmsgcon = msgcon.split('/')[3]
+			
+			sp = Post(smsgcon)
+
+			if sp.time_elapsed() > datetime.timedelta(hours=2) and sp.time_elapsed() < datetime.timedelta(hours=48):
+				tempmsg = await client.send_message(message.channel, 'The post is ' + str(sp.time_elapsed())[:-7] + ' hours old and earned ' + str(sp.reward))
+
+				res = await client.wait_for_reaction(['☑'], message=msg)
+				if "developers" in [y.name.lower() for y in res.user.roles] or "moderators" in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
+					await client.delete_message(msg)
+					await client.delete_message(tempmsg)
+
+					if tmsgcon in tag_list:
+						dest_channel = tag_list.index(tmsgcon)
+					else:
+						dest_channel = tag_list.len()
+
+					await client.send_message(client.get_channel(channels_list[dest_channel]), content=msgaut + ' sent: ' + msgcon) # Target channel for accepted posts.
+			
+			else:
+				tempmsg = await client.send_message(message.channel, 'Your post has to be between 2h and 48h old.')
 				await client.delete_message(msg)
-				await client.delete_message(tempmsg)
 
-				await client.send_message(client.get_channel(channels_list[12]), content=msgaut + ' sent: ' + msgcon) # Target channel for accepted posts.
-		
-		else:
-			tempmsg = await client.send_message(message.channel, 'Your post has to be between 2h and 48h old.')
+		elif message.content.startswith('!ping') and "developers" in [y.name.lower() for y in message.author.roles] or "moderators" in [y.name.lower() for y in message.author.roles]:
+			await client.send_message(message.channel, ':ping_pong: Pong!')
+
+		elif "steemit-moderator" not in [y.name.lower() for y in message.author.roles]:
 			await client.delete_message(msg)
-
-	elif message.content.startswith('!ping') and "developers" in [y.name.lower() for y in message.author.roles] or "moderators" in [y.name.lower() for y in message.author.roles]:
-		await client.send_message(message.channel, ':ping_pong: Pong!')
-
-	elif "steemit-moderator" not in [y.name.lower() for y in message.author.roles]:
-		await client.delete_message(msg)
-		await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "steemit"')
-
-# After you have modified the code, feel free to delete the line above (line 33) so it does not keep popping up everytime you initiate the ping commmand.
+			await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "steemit"')
 	
 client.run('MzkxMDczNjgzNTk2MjQ3MDQw.DRTbpQ.0kipdJjxdKSlERdeKkzSt11tut8')
 
