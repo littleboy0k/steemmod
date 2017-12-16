@@ -12,44 +12,20 @@ import datetime
 client = Bot(description="Placeholder", command_prefix="!", pm_help = True)
 s = Steem()
 
-# Add your channels there, by ID. This will be necessary for moving around the server.
 
-channels_list = ['389762510779187200', #introduceyourself
-'389608804972756993', #steemit
-'389762038408282112', #bitcoin
-'389762302330535946', #cryptocurrency
-'389762891823316992', #blog
-'389761959014432778', #steem
-'389764215537270787', #crypto
-'389764282700660737', #health
-'389764314313129984', #science
-'389890366427627520', #technology
-'389890644551794688', #programming
-'389890578499764226', #tutorials
-'389764366456586240' #all_other
+channels_list = ['', # Add channels that the bot will interact with in any way, by id.
 ]
 
-tag_list = ['introduceyourself',
-'steemit',
-'bitcoin',
-'cryptocurrency',
-'blog',
-'steem',
-'crypto',
-'health',
-'science',
-'technology',
-'programming',
-'tutorials']
-
-allowed_channels = ['387030201961545728', #community-review
-
+tag_list = ['', # Add your steemit tags for sorting here.
 ]
 
-moderating_roles = ['moderators', # Keep them lower case.
-'developers']
+allowed_channels = ['', # Channels that the bot will monitor, by id.
+]
 
-bot_role = 'steemit-moderator' # Set your bot's role here.
+moderating_roles = ['', # Keep them lower case.
+]
+
+bot_role = '' # Set your bot's role here.
 
 # This is what happens everytime the bot launches. In this case, it prints information like server count, user count the bot is connected to, and the bot id in the console.
 # Do not mess with it because the bot can break, if you wish to do so, please consult me or someone trusted.
@@ -89,7 +65,7 @@ async def on_message(message):
 				tempmsg = await client.send_message(message.channel, 'The post is ' + str(sp.time_elapsed())[:-7] + ' hours old and earned ' + str(sp.reward))
 
 				res = await client.wait_for_reaction(['☑'], message=msg) # Waiting for the emote 
-				if moderating_roles[0] in [y.name.lower() for y in res.user.roles] or moderating_roles[1] in [y.name.lower() for y in res.user.roles]: # Name of the role meant to accept posts.
+				if moderating_roles[0] in [y.name.lower() for y in res.user.roles] or moderating_roles[1] in [y.name.lower() for y in res.user.roles]:
 					await client.delete_message(msg)
 					await client.delete_message(tempmsg)
 
@@ -98,7 +74,7 @@ async def on_message(message):
 					else:
 						dest_channel = tag_list.len()
 
-					await client.send_message(client.get_channel(channels_list[dest_channel]), content=msgaut + ' sent: ' + msgcon) # Target channel for accepted posts.
+					await client.send_message(client.get_channel(channels_list[dest_channel]), content=msgaut + ' sent: ' + msgcon) # Target channel & message for accepted posts.
 			
 			else:
 				tempmsg = await client.send_message(message.channel, 'Your post has to be between 2h and 48h old.')
@@ -107,19 +83,13 @@ async def on_message(message):
 		elif message.content.startswith('!ping') and moderating_roles[0] in [y.name.lower() for y in message.author.roles] or moderating_roles[1] in [y.name.lower() for y in message.author.roles]: # Ping to test if bot is responsive
 			await client.send_message(message.channel, ':ping_pong: Pong!')
 
-		elif bot_role not in [y.name.lower() for y in message.author.roles]: # Removing the post if it's not a steemit link
+		elif bot_role not in [y.name.lower() for y in message.author.roles]: # Removing the post if it's not a steemit link.
 			await client.delete_message(msg)
 			await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "steemit"')
 	
-client.run('') # <----------- PUT YOUR BOT'S TOKEN HERE
+client.run('') # <----------- PUT YOUR BOT'S TOKEN HERE!
 
 # Basic Bot was created by Habchy#1665
-# Please join this Discord server if you need help: https://discord.gg/FNNNgqb
-# Please modify the parts of the code where it asks you to. Example: The Prefix or The Bot Token
-# This is by no means a full bot, it's more of a starter to show you what the python language can do in Discord.
 # Thank you for using this and don't forget to star my repo on GitHub! [Repo Link: https://github.com/Habchy/BasicBot]
 
 # STEEM's functionality was coded by Vctr#5566, or @jestemkioskiem on steem and steem chat. Contact him if you have any questions.
-
-# The help command is currently set to be Direct Messaged.
-# If you would like to change that, change "pm_help = True" to "pm_help = False" on line 9.
