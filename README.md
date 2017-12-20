@@ -11,8 +11,8 @@ server-management-bot.py is built on BasicBot (https://github.com/Habchy/BasicBo
 **Required directories:**
 * steem API (steem-python)
 * coinmarket API (coinmarketcap)
-* xlutils
 * platform
+* xlutils
 * xlwt
 * xlrd
 
