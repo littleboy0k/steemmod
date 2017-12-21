@@ -11,16 +11,14 @@ server-management-bot.py is built on [BasicBot](https://github.com/Habchy/BasicB
 ## Required directories:
 * steem API (steem-python)
 * coinmarket API (coinmarketcap)
-* xlutils
-* xlwt
-* xlrd
 
 ## Commands and functions:
 
-!ping - checks if bot is responsive by responding "pong";
+* !ping - checks if bot is responsive by responding "pong";
 
-Accepting a post - use :ballot_box_with_check: on the given post;
+* Accepting a post - use :ballot_box_with_check: on the given post;
 
-Submit a post by posting a message starting with *https://steemit* or *steemit* in an allowed channel;
+* Submit a post by posting a message starting with *https://steemit* or *steemit* in an allowed channel;
 
+* Removes accepted posts older than 132 hours;
 
