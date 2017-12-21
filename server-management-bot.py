@@ -12,24 +12,19 @@ from discord.ext import commands
 client = Bot(description="Placeholder", command_prefix="!", pm_help = True)
 s = Steem()
 
-channels_list = ['391089062947061763', # Add channels that correspond to the tags bellow.
-'393024926388584484',
-'393024964208492554'
+channels_list = ['', # Add channels that correspond to the tags bellow.
 ]
 
-tag_list = ['steemit', # Add your steemit tags for sorting here.
-'steem',
-'utopian-io'
+tag_list = ['', # Add your steemit tags for sorting here.
 ]
 
-allowed_channels = ['391079614270668803', # Channels that the bot will monitor, by id.
+allowed_channels = ['', # Channels that the bot will monitor, by id.
 ]
 
-moderating_roles = ['developers', # Keep them lower case.
-'moderators'
+moderating_roles = ['', # Keep them lower case.
 ]
 
-bot_role = 'bots' # Set your bot's role here.
+bot_role = '' # Set your bot's role here.
 
 # This is what happens everytime the bot launches. In this case, it prints information like server count, user count the bot is connected to, and the bot id in the console.
 # Do not mess with it because the bot can break, if you wish to do so, please consult Habchy or someone trusted.
@@ -57,14 +52,13 @@ async def on_message(message):
 	msg = message
 	msgcon = msg.content
 	msgaut = '@' + msg.author.name # Setting some variables for Quality of life purposes.
-	
+
 	if bot_role not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels: # Checking if the poster wasn't the bot and if it was in one of the monitored channels.
 
 		if message.content.startswith('https://steemit') or message.content.startswith('steemit'): # The required beggining of a text for it to be considered not spam.			
 			smsgcon = msgcon.split('@')[1]
 			tmsgcon = msgcon.split('/')[3]
 			sp = Post(smsgcon)
-
 			botmsg = str('This post was nominated by **' + str(msgaut) + '** and authored by **@' + str(sp.author) + '**\n\n' + 'Title: ' + str(sp.title) + '\n' + 'Statistics: ' + str(sp.time_elapsed())[:-10] + ' hours old. Payout: ' + str(sp.reward))	
 
 			if sp.time_elapsed() > datetime.timedelta(hours=2) and sp.time_elapsed() < datetime.timedelta(hours=48): # Checking if post is older than 2h and younger than 48h
@@ -94,7 +88,7 @@ async def on_message(message):
 			await client.delete_message(msg)
 			await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "steemit"')
 	
-client.run('MzkxMjA3NjQxNTIwNzk5NzQ0.DRvvmw.A8zz88yH9gKuTN2HO4QZ-WNMEw8') # <----------- PUT YOUR BOT'S TOKEN HERE!
+client.run('') # <----------- PUT YOUR BOT'S TOKEN HERE!
 
 # Basic Bot was created by Habchy#1665
 # Thank you for using this and don't forget to star Habchy's repo on GitHub! [Repo Link: https://github.com/Habchy/BasicBot]
