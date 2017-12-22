@@ -1,19 +1,18 @@
 # These are the dependecies. The bot depends on these to function, hence the name. Please do not change these unless your adding to them, because they can break the bot.
 import discord
 import asyncio
-from discord.ext.commands import Bot
-from discord.ext import commands
 import platform
+import datetime
 from steem import Steem
 from steem.post import Post
-import datetime
+from discord.ext.commands import Bot
+from discord.ext import commands
 
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. Commands are strongly discouraged and will require rewriting a lot of code.
 client = Bot(description="Placeholder", command_prefix="!", pm_help = True)
 s = Steem()
 
-
-channels_list = ['', # Add channels that the bot will interact with in any way, by id.
+channels_list = ['', # Add channels that correspond to the tags bellow.
 ]
 
 tag_list = ['', # Add your steemit tags for sorting here.
@@ -50,19 +49,35 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+
+	# Setting some variables for Quality of life purposes.
 	msg = message
 	msgcon = msg.content
-	msgaut = '@' + msg.author.name # Setting some variables for Quality of life purposes.
+	msgaut = '@' + msg.author.name 
 
+	# This code removes messages older than 132 hours whenever someone sends a message on any channel.
+	currtime = datetime.datetime.now() - datetime.timedelta(hours=132)
+	chn = []
+	for x in client.get_all_channels():
+		if x.id in channels_list:
+			chn.append(x)
+	for x in chn:
+		async for y in client.logs_from(x,limit=100,before=currtime):
+			await client.delete_message(y)
+
+	# This code is a gigantic block of mess that makes up the main functionality of the bot.
 	if bot_role not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels: # Checking if the poster wasn't the bot and if it was in one of the monitored channels.
 
-		if message.content.startswith('https://steemit') or message.content.startswith('steemit'): # The required beggining of a text for it to be considered not spam.			
+		if message.content.startswith('https://steemit') or message.content.startswith('https://busy'): # The required beggining of a text for it to be considered not spam.			
 			smsgcon = msgcon.split('@')[1]
 			tmsgcon = msgcon.split('/')[3]
 			sp = Post(smsgcon)
 
+			botmsg = str('This post was nominated by **' + str(msgaut) + '** and authored by **@' + str(sp.author) + '**\n\n' + 'Title: ' + str(sp.title) + '\n' + 'Statistics: ' + str(sp.time_elapsed())[:-10] + ' hours old. Payout: ' + str(sp.reward))	
+
 			if sp.time_elapsed() > datetime.timedelta(hours=2) and sp.time_elapsed() < datetime.timedelta(hours=48): # Checking if post is older than 2h and younger than 48h
-				tempmsg = await client.send_message(message.channel, 'The post is ' + str(sp.time_elapsed())[:-7] + ' hours old and earned ' + str(sp.reward))
+				tempmsg = await client.send_message(message.channel, botmsg)
+
 
 				res = await client.wait_for_reaction(['☑'], message=msg) # Waiting for the emote 
 				if moderating_roles[0] in [y.name.lower() for y in res.user.roles] or moderating_roles[1] in [y.name.lower() for y in res.user.roles]:
@@ -72,9 +87,9 @@ async def on_message(message):
 					if tmsgcon in tag_list: # Sorting the item into a correct channel
 						dest_channel = tag_list.index(tmsgcon)
 					else:
-						dest_channel = tag_list.len()
+						dest_channel = len(tag_list)
 
-					await client.send_message(client.get_channel(channels_list[dest_channel]), content=msgaut + ' sent: ' + msgcon) # Target channel & message for accepted posts.
+					await client.send_message(client.get_channel(channels_list[dest_channel]), content=msgcon + "\n" + botmsg) # Target channel & message for accepted posts.
 			
 			else:
 				tempmsg = await client.send_message(message.channel, 'Your post has to be between 2h and 48h old.')
@@ -83,9 +98,10 @@ async def on_message(message):
 		elif message.content.startswith('!ping') and moderating_roles[0] in [y.name.lower() for y in message.author.roles] or moderating_roles[1] in [y.name.lower() for y in message.author.roles]: # Ping to test if bot is responsive
 			await client.send_message(message.channel, ':ping_pong: Pong!')
 
-		elif bot_role not in [y.name.lower() for y in message.author.roles]: # Removing the post if it's not a steemit link.
+		# This code removes the post if it's not a steemit/busy link.
+		elif bot_role not in [y.name.lower() for y in message.author.roles]: 
 			await client.delete_message(msg)
-			await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "steemit"')
+			await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "https://busy"')
 	
 client.run('') # <----------- PUT YOUR BOT'S TOKEN HERE!
 
