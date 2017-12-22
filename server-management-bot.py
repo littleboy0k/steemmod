@@ -30,7 +30,7 @@ tag_list = ['', # Add your steemit tags for sorting here.
 # DEFINE FUNCTIONS HERE #
 #########################
 
-async def command(msg,command): # Used to run any commands. Add your commmands here.
+async def command(msg,command): # Used to run any commands. Add your custom commands here, each under a new elif command.startswith(name):.
 	command = str(command)
 	command = command[1:]
 	if command.startswith('ping'):
@@ -41,6 +41,7 @@ async def command(msg,command): # Used to run any commands. Add your commmands h
 		for member in users_online:
 			list_of_users.append(member.roles)
 		await client.send_message(msg.channel, "There's " + str(len(list_of_users)) + " users online.")
+	
 	else:
 		command_error = await client.send_message(msg.channel, "Incorrect command.")
 		await asyncio.sleep(6)
