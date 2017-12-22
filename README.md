@@ -12,13 +12,13 @@ server-management-bot.py is built on [BasicBot](https://github.com/Habchy/BasicB
 * steem API (steem-python)
 * coinmarket API (coinmarketcap)
 
-## Commands and functions:
+## Functions:
 
-* !ping - checks if bot is responsive by responding "pong";
+* The ability to finally easily add custom commands by editing the command() function;
 
 * Accepting a post - use :ballot_box_with_check: on the given post;
 
 * Submit a post by posting a message starting with *https://steemit* or *steemit* in an allowed channel;
 
-* Removes accepted posts older than 132 hours;
+* Removes accepted posts older than x hours;
 
