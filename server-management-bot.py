@@ -125,7 +125,7 @@ async def on_message(message):
 		if message.content.startswith('https://steemit.com') or message.content.startswith('https://busy.org'): # The required beggining of a text for it to be considered not spam.	
 			await authorize_post(message)
 		else:
-			if not is_mod(user=message.author):
+			if not is_mod(reaction=None, user=message.author):
 				await client.delete_message(message)
 				link_error = await client.send_message(message.channel, content= '@' + str(message.author) + ' Your link has to start with "https://steemit.com" or "https://busy.org"')
 				await asyncio.sleep(6)
