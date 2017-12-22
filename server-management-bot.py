@@ -12,23 +12,18 @@ from discord.ext import commands
 client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = True)
 s = Steem()
 
-allowed_channels = ['391079614270668803', # Channels that the bot will monitor, by id.
+allowed_channels = ['', # Channels that the bot will monitor, by id.
 ]
 
-moderating_roles = ['developers', # Keep them lower case.
-'moderators'
+moderating_roles = ['', # Keep them lower case.
 ]
 
-bot_role = 'bots' # Set a role for all of your bots here. You need to give them such role on the discord server.
+bot_role = '' # Set a role for all of your bots here. You need to give them such role on the discord server.
 
-channels_list = ['391089062947061763', # Add channels that correspond to the tags bellow.
-'393024926388584484',
-'393024964208492554'
+channels_list = ['', # Add channels that correspond to the tags bellow.
 ]
 
-tag_list = ['steemit', # Add your steemit tags for sorting here.
-'steem',
-'utopian-io'
+tag_list = ['', # Add your steemit tags for sorting here.
 ]
 
 #########################
@@ -136,7 +131,7 @@ async def on_message(message):
 				await asyncio.sleep(6)
 				await client.delete_message(link_error)	
 
-client.run('MzkxMjA3NjQxNTIwNzk5NzQ0.DRvvmw.A8zz88yH9gKuTN2HO4QZ-WNMEw8') # <----------- PUT YOUR BOT'S TOKEN HERE!
+client.run('') # <----------- PUT YOUR BOT'S TOKEN HERE!
 
 # Basic Bot was created by Habchy#1665
 # Thank you for using this and don't forget to star Habchy's repo on GitHub! [Repo Link: https://github.com/Habchy/BasicBot]
