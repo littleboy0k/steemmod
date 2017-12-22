@@ -8,15 +8,9 @@ from steem.post import Post
 from discord.ext.commands import Bot
 from discord.ext import commands
 
-# Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. Commands are strongly discouraged and will require rewriting a lot of code.
-client = Bot(description="Placeholder", command_prefix="!", pm_help = True)
+# Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. @client.command is strongly discouraged, edit your commands into the command() function instead.
+client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = True)
 s = Steem()
-
-channels_list = ['', # Add channels that correspond to the tags bellow.
-]
-
-tag_list = ['', # Add your steemit tags for sorting here.
-]
 
 allowed_channels = ['', # Channels that the bot will monitor, by id.
 ]
@@ -24,39 +18,42 @@ allowed_channels = ['', # Channels that the bot will monitor, by id.
 moderating_roles = ['', # Keep them lower case.
 ]
 
-bot_role = '' # Set your bot's role here.
+bot_role = '' # Set a role for all of your bots here. You need to give them such role on the discord server.
 
-# This is what happens everytime the bot launches. In this case, it prints information like server count, user count the bot is connected to, and the bot id in the console.
-# Do not mess with it because the bot can break, if you wish to do so, please consult Habchy or someone trusted.
-@client.event
-async def on_ready():
-	print('Logged in as '+client.user.name+' (ID:'+client.user.id+') | Connected to '+str(len(client.servers))+' servers | Connected to '+str(len(set(client.get_all_members())))+' users')
-	print('--------')
-	print('Current Discord.py Version: {} | Current Python Version: {}'.format(discord.__version__, platform.python_version()))
-	print('--------')
-	print('Use this link to invite {}:'.format(client.user.name))
-	print('https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions=8'.format(client.user.id))
-	print('--------')
-	print('Github Link: https://github.com/Habchy/BasicBot')
-	print('--------')
-	print('BasicBot created by Habchy#1665')
-	print('--------')
-	print('Code altered to work with STEEM by Vctr#5566')
-	print('--------')
-	print('Steemit profile: https://steemit.com/@jestemkioskiem')
+channels_list = ['', # Add channels that correspond to the tags bellow.
+]
 
-# This is our event check. For simplicity's sake, everything happens here. You may add your own events, but commands are discouraged.
+tag_list = ['', # Add your steemit tags for sorting here.
+]
 
-@client.event
-async def on_message(message):
+#########################
+# DEFINE FUNCTIONS HERE #
+#########################
 
-	# Setting some variables for Quality of life purposes.
-	msg = message
-	msgcon = msg.content
-	msgaut = '@' + msg.author.name 
+ # Used to run any commands. Add your custom commands here, each under a new elif command.startswith(name):.
+async def command(msg,command):
+	command = str(command)
+	command = command[1:]
+	if command.startswith('ping'):
+		await client.send_message(msg.channel,":ping_pong: Pong!")
+	elif command.startswith('users'):
+		list_of_users = []
+		users_online = client.get_all_members()
+		for member in users_online:
+			list_of_users.append(member.roles)
+		await client.send_message(msg.channel, "There's " + str(len(list_of_users)) + " users online.")
 
-	# This code removes messages older than 132 hours whenever someone sends a message on any channel.
-	currtime = datetime.datetime.now() - datetime.timedelta(hours=132)
+	elif command.startswith('hey'):
+		await client.send_message(msg.channel, "Hey, utopian!")
+	
+	else:
+		command_error = await client.send_message(msg.channel, "Incorrect command.")
+		await asyncio.sleep(6)
+		await client.delete_message(command_error)
+
+# Deletes posts in channel_list channels older than given hours.
+async def del_old_mess(hours): 
+	currtime = datetime.datetime.now() - datetime.timedelta(hours=hours)
 	chn = []
 	for x in client.get_all_channels():
 		if x.id in channels_list:
@@ -65,44 +62,85 @@ async def on_message(message):
 		async for y in client.logs_from(x,limit=100,before=currtime):
 			await client.delete_message(y)
 
-	# This code is a gigantic block of mess that makes up the main functionality of the bot.
-	if bot_role not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels: # Checking if the poster wasn't the bot and if it was in one of the monitored channels.
+# Used to authorize posts and sort them into correct channels.
+async def authorize_post(msg): 
+	msg_tag = msg.content.split('/')[3]
+	p = Post(msg.content.split('@')[1])
+	botmsg = str('This post was nominated by **@' + str(msg.author) + '** and authored by **@' + str(p.author) + '**\n\nTitle: ' + str(p.title) + '\nStatistics: ' + str(p.time_elapsed())[:-10] + ' hours old. Payout: ' + str(p.reward))	
 
-		if message.content.startswith('https://steemit') or message.content.startswith('https://busy'): # The required beggining of a text for it to be considered not spam.			
-			smsgcon = msgcon.split('@')[1]
-			tmsgcon = msgcon.split('/')[3]
-			sp = Post(smsgcon)
+	if check_age(p,2,48):
+		feedback_message = await client.send_message(msg.channel, botmsg)
+		reaction = await client.wait_for_reaction(['☑'], message=msg, check=is_mod) # Waiting for the emote 
+		await client.delete_message(msg)
+		await client.delete_message(feedback_message)
 
-			botmsg = str('This post was nominated by **' + str(msgaut) + '** and authored by **@' + str(sp.author) + '**\n\n' + 'Title: ' + str(sp.title) + '\n' + 'Statistics: ' + str(sp.time_elapsed())[:-10] + ' hours old. Payout: ' + str(sp.reward))	
+		if msg_tag in tag_list: # Sorting the item into a correct channel
+			dest_channel = tag_list.index(msg_tag)
+		else:
+			dest_channel = len(tag_list)
 
-			if sp.time_elapsed() > datetime.timedelta(hours=2) and sp.time_elapsed() < datetime.timedelta(hours=48): # Checking if post is older than 2h and younger than 48h
-				tempmsg = await client.send_message(message.channel, botmsg)
+		await client.send_message(client.get_channel(channels_list[dest_channel]), content=msg.content + "\n" + botmsg) # Target channel & message for accepted posts.
+	else:
+		age_error = await client.send_message(msg.channel, 'Your post has to be between 2h and 48h old.')
+		await client.delete_message(msg)
+		await asyncio.sleep(6)
+		await client.delete_message(age_error)
+
+# Returns true if the post's age is between two dates.
+def check_age(post,low,high): 
+	if post.time_elapsed() > datetime.timedelta(hours=low) and post.time_elapsed() < datetime.timedelta(hours=high):
+		return True
+	else:
+		return False
+
+# Returns true if message's author has a moderating_roles role.
+def is_mod(reaction, user): 
+	auth_roles = []
+	for x in user.roles:
+		auth_roles.append(x.name.lower())
+
+	for x in moderating_roles:
+		if x in auth_roles:
+			return True
+			break
+		else:
+			return False
+
+######################
+# DEFINE EVENTS HERE #
+######################
+
+@client.event
+async def on_ready():
+	print('\nUse this link to invite {}:'.format(client.user.name))
+	print('https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions=8'.format(client.user.id))
+	print('--------')
+	print('BasicBot created by Habchy#1665')
+	print('--------')
+	print('Code altered to work with STEEM by Vctr#5566')
+	print('--------')
+	print('Steemit profile: https://steemit.com/@jestemkioskiem')
 
 
-				res = await client.wait_for_reaction(['☑'], message=msg) # Waiting for the emote 
-				if moderating_roles[0] in [y.name.lower() for y in res.user.roles] or moderating_roles[1] in [y.name.lower() for y in res.user.roles]:
-					await client.delete_message(msg)
-					await client.delete_message(tempmsg)
-
-					if tmsgcon in tag_list: # Sorting the item into a correct channel
-						dest_channel = tag_list.index(tmsgcon)
-					else:
-						dest_channel = len(tag_list)
-
-					await client.send_message(client.get_channel(channels_list[dest_channel]), content=msgcon + "\n" + botmsg) # Target channel & message for accepted posts.
-			
-			else:
-				tempmsg = await client.send_message(message.channel, 'Your post has to be between 2h and 48h old.')
-				await client.delete_message(msg)
-
-		elif message.content.startswith('!ping') and moderating_roles[0] in [y.name.lower() for y in message.author.roles] or moderating_roles[1] in [y.name.lower() for y in message.author.roles]: # Ping to test if bot is responsive
-			await client.send_message(message.channel, ':ping_pong: Pong!')
-
-		# This code removes the post if it's not a steemit/busy link.
-		elif bot_role not in [y.name.lower() for y in message.author.roles]: 
-			await client.delete_message(msg)
-			await client.send_message(message.channel, content=msgaut + ' Your link has to start with "https://steemit" or "https://busy"')
+# This is our event check. For simplicity's sake, everything happens here. You may add your own events, but commands are discouraged, for that, edit the command() function instead.
+@client.event
+async def on_message(message):
 	
+	await del_old_mess(132)
+
+	if message.content.startswith(client.command_prefix): # Setting up commands. You can add new commands in the commands() function at the top of the code.
+		await command(message, message.content)
+
+	elif bot_role not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels: # Checking if the poster wasn't the bot and if it was in one of the monitored channels.
+		if message.content.startswith('https://steemit.com') or message.content.startswith('https://busy.org'): # The required beggining of a text for it to be considered not spam.	
+			await authorize_post(message)
+		else:
+			if not is_mod(reaction=None, user=message.author):
+				await client.delete_message(message)
+				link_error = await client.send_message(message.channel, content= '@' + str(message.author) + ' Your link has to start with "https://steemit.com" or "https://busy.org"')
+				await asyncio.sleep(6)
+				await client.delete_message(link_error)	
+
 client.run('') # <----------- PUT YOUR BOT'S TOKEN HERE!
 
 # Basic Bot was created by Habchy#1665
