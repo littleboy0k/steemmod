@@ -8,7 +8,7 @@ from steem.post import Post
 from discord.ext.commands import Bot
 from discord.ext import commands
 
-# Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. Commands are strongly discouraged and will require rewriting a lot of code, edit them into the command() function instead.
+# Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. @client.command is strongly discouraged, edit your commands into the command() function instead.
 client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = True)
 s = Steem()
 
@@ -32,7 +32,8 @@ tag_list = ['', # Add your steemit tags for sorting here.
 # DEFINE FUNCTIONS HERE #
 #########################
 
-async def command(msg,command): # Used to run any commands. Add your custom commands here, each under a new elif command.startswith(name):.
+ # Used to run any commands. Add your custom commands here, each under a new elif command.startswith(name):.
+async def command(msg,command):
 	command = str(command)
 	command = command[1:]
 	if command.startswith('ping'):
@@ -43,13 +44,17 @@ async def command(msg,command): # Used to run any commands. Add your custom comm
 		for member in users_online:
 			list_of_users.append(member.roles)
 		await client.send_message(msg.channel, "There's " + str(len(list_of_users)) + " users online.")
+
+	elif command.startswith('hey'):
+		await client.send_message(msg.channel, "Hey, utopian!")
 	
 	else:
 		command_error = await client.send_message(msg.channel, "Incorrect command.")
 		await asyncio.sleep(6)
 		await client.delete_message(command_error)
 
-async def del_old_mess(hours): # Deletes posts in channel_list channels older than given hours.
+# Deletes posts in channel_list channels older than given hours.
+async def del_old_mess(hours): 
 	currtime = datetime.datetime.now() - datetime.timedelta(hours=hours)
 	chn = []
 	for x in client.get_all_channels():
@@ -59,7 +64,8 @@ async def del_old_mess(hours): # Deletes posts in channel_list channels older th
 		async for y in client.logs_from(x,limit=100,before=currtime):
 			await client.delete_message(y)
 
-async def authorize_post(msg): # Used to authorize posts and sort them into correct channels.
+# Used to authorize posts and sort them into correct channels.
+async def authorize_post(msg): 
 	msg_tag = msg.content.split('/')[3]
 	p = Post(msg.content.split('@')[1])
 	botmsg = str('This post was nominated by **@' + str(msg.author) + '** and authored by **@' + str(p.author) + '**\n\nTitle: ' + str(p.title) + '\nStatistics: ' + str(p.time_elapsed())[:-10] + ' hours old. Payout: ' + str(p.reward))	
@@ -80,15 +86,17 @@ async def authorize_post(msg): # Used to authorize posts and sort them into corr
 		age_error = await client.send_message(msg.channel, 'Your post has to be between 2h and 48h old.')
 		await client.delete_message(msg)
 		await asyncio.sleep(6)
-		await client.delete_message(age_error)		
+		await client.delete_message(age_error)
 
-def check_age(post,low,high): # Returns true if the post's age is between two dates.
+# Returns true if the post's age is between two dates.
+def check_age(post,low,high): 
 	if post.time_elapsed() > datetime.timedelta(hours=low) and post.time_elapsed() < datetime.timedelta(hours=high):
 		return True
 	else:
 		return False
 
-def is_mod(reaction, user): # Returns true if message's author has a moderating_roles role.
+# Returns true if message's author has a moderating_roles role.
+def is_mod(reaction, user): 
 	auth_roles = []
 	for x in user.roles:
 		auth_roles.append(x.name.lower())
@@ -119,6 +127,7 @@ async def on_ready():
 # This is our event check. For simplicity's sake, everything happens here. You may add your own events, but commands are discouraged, for that, edit the command() function instead.
 @client.event
 async def on_message(message):
+	
 	await del_old_mess(132)
 
 	if message.content.startswith(client.command_prefix): # Setting up commands. You can add new commands in the commands() function at the top of the code.
