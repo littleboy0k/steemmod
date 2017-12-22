@@ -12,6 +12,8 @@ from discord.ext import commands
 client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = True)
 s = Steem()
 
+BOT_TOKEN = '' # <----------- PUT YOUR BOT'S TOKEN HERE!
+
 allowed_channels = ['', # Channels that the bot will monitor, by id.
 ]
 
@@ -132,7 +134,8 @@ async def on_message(message):
 				await asyncio.sleep(6)
 				await client.delete_message(link_error)	
 
-client.run('') # <----------- PUT YOUR BOT'S TOKEN HERE!
+if __name__ == '__main__':
+	client.run(BOT_TOKEN)
 
 # Basic Bot was created by Habchy#1665
 # Thank you for using this and don't forget to star Habchy's repo on GitHub! [Repo Link: https://github.com/Habchy/BasicBot]
