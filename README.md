@@ -17,6 +17,8 @@ The repository currently includes:
 
 ```MANAGEMENT_BOT_TOKEN=BOT_TOKEN python3.6 server-management-bot.py``` to run Marshal
 
+
+![Marshal.png](https://i.imgur.com/fL2SQqi.png)
 # Marshal
 Marshal, the server-management-bot was built for the steemit moderation project by [Jestemkioskiem](https://github.com/Jestemkioskiem) (https://steemit.com/@jestemkioskiem/)
 
@@ -29,6 +31,7 @@ Marshal, the server-management-bot was built for the steemit moderation project 
 * Sort accepted posts into correct channels by the tag they were posted under;
 * Remove accepted posts older than x hours;
 
+![stbot.png](https://i.imgur.com/9kev1YB.png)
 # stbot
 **stbot** was built for the steemit moderation project by [Emre](https://github.com/emre) (https://steemit.com/@emrebeyler).
 
