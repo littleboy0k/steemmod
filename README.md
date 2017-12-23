@@ -19,7 +19,8 @@ The repository currently includes:
 
 # Marshal
 ![Marshal.png](https://i.imgur.com/fL2SQqi.png)
-Marshal, the server-management-bot was built for the steemit moderation project by [Jestemkioskiem](https://github.com/Jestemkioskiem) (https://steemit.com/@jestemkioskiem/)
+
+**Marshal**, the server-management-bot, was built for the steemit moderation project by [Jestemkioskiem](https://github.com/Jestemkioskiem) (https://steemit.com/@jestemkioskiem/)
 
 ## Functionality:
 
@@ -32,7 +33,8 @@ Marshal, the server-management-bot was built for the steemit moderation project 
 
 # stbot
 ![stbot.png](https://i.imgur.com/9kev1YB.png)
-**stbot** was built for the steemit moderation project by [Emre](https://github.com/emre) (https://steemit.com/@emrebeyler).
+
+**stbot**, the payout calculator, was built for the steemit moderation project by [Emre](https://github.com/emre) (https://steemit.com/@emrebeyler).
 
 ## Functionality:
 
