@@ -1,8 +1,8 @@
 # steemit-moderation
 Repository of open source tools used by steemit moderation community.
 The repository currently includes:
-* **Marshal**
-* **stbot**
+* *Marshal* the server manager
+* *stbot* the payout calculator
 
 ## Requirements:
 #### Python:
@@ -14,6 +14,7 @@ The repository currently includes:
 
 ## Running:
 ```PAYOUT_BOT_TOKEN=BOT_TOKEN python3.6 stbot.py``` to run stbot
+
 ```MANAGEMENT_BOT_TOKEN=BOT_TOKEN python3.6 server-management-bot.py``` to run Marshal
 
 # Marshal
