@@ -7,6 +7,7 @@ from steem.post import Post
 from discord.ext.commands import Bot
 from discord.ext import commands
 from coinmarketcap import Market
+import os
 
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. @client.command is strongly discouraged, edit your commands into the command() function instead.
 client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = True)
@@ -206,4 +207,4 @@ async def on_reaction_add(reaction, user):
 			await client.delete_message(botmsg)
 
 if __name__ == '__main__': # Starting the bot.
-	client.run('Mzk0MDU4NTQ5NDAxMjIzMTY5.DSOv3A.5hbG3-Pbn9jdEnuROLd7gPBKpJM')
+	client.run(os.getenv('MANAGEMENT_BOT_TOKEN'))
