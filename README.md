@@ -1,5 +1,6 @@
-# steemit-moderation
-Repository of open source tools used by steemit moderation community.
+# steem-moderation
+
+Repository of open source tools used by steem moderation community.
 The repository currently includes:
 * *Marshal* the server manager
 * *stbot* the payout calculator
