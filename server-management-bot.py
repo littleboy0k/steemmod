@@ -14,48 +14,29 @@ client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = 
 s = Steem()
 react_dict = {}
 cmc = Market() # Coinmarketcap API call.
-bot_role = 'marshal' # Set a role for all of your bots here. You need to give them such role on the discord server.
+bot_role = 'bots' # Set a role for all of your bots here. You need to give them such role on the discord server.
 ste_usd = cmc.ticker("steem", limit="3", convert="USD")[0].get("price_usd", "none")
 sbd_usd = cmc.ticker("steem-dollars", limit="3", convert="USD")[0].get("price_usd", "none")
 btc_usd = cmc.ticker("bitcoin", limit="3", convert="USD")[0].get("price_usd", "none")
 
 
 
-allowed_channels = ['387030201961545728',
-'392849546734206986',
+allowed_channels = ['391079614270668803',
  #community-review
 ]
 
 moderating_roles = ['developers', # Keep them lower case.
 'moderators']
 
-channels_list = ['389762510779187200', #introduceyourself
-'389608804972756993', #steemit
-'389762038408282112', #bitcoin
-'389762302330535946', #cryptocurrency
-'389762891823316992', #blog
-'389761959014432778', #steem
-'389764215537270787', #crypto
-'389764282700660737', #health	
-'389764314313129984', #science
-'389890366427627520', #technology
-'389890644551794688', #programming
-'389890578499764226', #tutorials
-'389764366456586240' #all_other
+channels_list = ['391089062947061763', #introduceyourself
+'393024926388584484', #steemit
+'393024964208492554', #bitcoin
+'398122653636100096' #others
 ]
 
 tag_list = ['introduceyourself',
 'steemit',
-'bitcoin',
-'cryptocurrency',
-'blog',
-'steem',
-'crypto',
-'health',
-'science',
-'technology',
-'programming',
-'tutorials']
+'bitcoin',]
 
 #########################
 # DEFINE FUNCTIONS HERE #
@@ -109,7 +90,7 @@ async def get_info(msg):
 		embed.add_field(name="Title", value=str(p.title), inline=False)
 		embed.add_field(name="Author", value=str("@"+p.author), inline=True)
 		embed.add_field(name="Nominator", value=str('<@'+ msg.author.id +'>'), inline=True)
-		embed.add_field(name="Age", value=str(p.time_elapsed())[:-10] +" godzin", inline=False)
+		embed.add_field(name="Age", value=str(p.time_elapsed())[:-10] +" hours", inline=False)
 		embed.add_field(name="Payout", value=str(p.reward), inline=True)
 		embed.add_field(name="Payout in USD", value=await payout(p.reward,sbd_usd,ste_usd), inline=True)
 		embed.set_footer(text="Marshal - a Steem bot by Vctr#5566 (@jestemkioskiem)")
@@ -135,12 +116,10 @@ async def authorize_post(msg, user):
 
 		print(msg)
 		embed = await get_info(msg)
-		#await client.send_message(client.get_channel(channels_list[dest_channel]), content=msg.content)
-		await client.send_message(client.get_channel('392849316177510400'), content=msg.content)
-		await client.send_message(client.get_channel('392849316177510400'), embed=embed)
-		await client.send_message(client.get_channel('392849316177510400'), content="This post was accepted by <@" + user.id + ">" )
-		#await client.send_message(client.get_channel(channels_list[dest_channel]), embed=embed) # Target channel & message for accepted posts.
-	
+		await client.send_message(client.get_channel(channels_list[dest_channel]), content=msg.content)
+		await client.send_message(client.get_channel(channels_list[dest_channel]), embed=embed) # Target channel & message for accepted posts.
+		await client.send_message(client.get_channel(channels_list[dest_channel]), content="This post was accepted by <@" + user.id + ">" )
+			
 
 # Returns true if the post's age is between two dates.
 def check_age(post,low,high): 
@@ -207,4 +186,4 @@ async def on_reaction_add(reaction, user):
 			await client.delete_message(botmsg)
 
 if __name__ == '__main__': # Starting the bot.
-	client.run(os.getenv('MANAGEMENT_BOT_TOKEN'))
+	client.run(os.getenv('TOKEN'))
