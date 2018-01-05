@@ -14,29 +14,44 @@ client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = 
 s = Steem()
 react_dict = {}
 cmc = Market() # Coinmarketcap API call.
-bot_role = 'bots' # Set a role for all of your bots here. You need to give them such role on the discord server.
+bot_role = 'marshal' # Set a role for all of your bots here. You need to give them such role on the discord server.
 ste_usd = cmc.ticker("steem", limit="3", convert="USD")[0].get("price_usd", "none")
 sbd_usd = cmc.ticker("steem-dollars", limit="3", convert="USD")[0].get("price_usd", "none")
 btc_usd = cmc.ticker("bitcoin", limit="3", convert="USD")[0].get("price_usd", "none")
 
-
-
-allowed_channels = ['391079614270668803',
- #community-review
+allowed_channels = ['387030201961545728', #community-review
 ]
 
 moderating_roles = ['developers', # Keep them lower case.
 'moderators']
 
-channels_list = ['391089062947061763', #introduceyourself
-'393024926388584484', #steemit
-'393024964208492554', #bitcoin
-'398122653636100096' #others
+channels_list = ['389762510779187200', #introduceyourself
+'389608804972756993', #steemit
+'389762038408282112', #bitcoin
+'389762302330535946', #cryptocurrency
+'389762891823316992', #blog
+'389761959014432778', #steem
+'389764215537270787', #crypto
+'389764282700660737', #health	
+'389764314313129984', #science
+'389890366427627520', #technology
+'389890644551794688', #programming
+'389890578499764226', #tutorials
+'389764366456586240' #all_other
 ]
 
 tag_list = ['introduceyourself',
 'steemit',
-'bitcoin',]
+'bitcoin',
+'cryptocurrency',
+'blog',
+'steem',
+'crypto',
+'health',
+'science',
+'technology',
+'programming',
+]
 
 #########################
 # DEFINE FUNCTIONS HERE #
