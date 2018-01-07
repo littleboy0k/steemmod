@@ -6,12 +6,18 @@ from steem import Steem
 from steem.post import Post
 from discord.ext.commands import Bot
 from discord.ext import commands
+from coinmarketcap import Market
+import os
 
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. @client.command is strongly discouraged, edit your commands into the command() function instead.
 client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = True)
 s = Steem(nodes=["https://api.steemit.com"])
-
+react_dict = {}
+cmc = Market() # Coinmarketcap API call.
 bot_role = 'marshal' # Set a role for all of your bots here. You need to give them such role on the discord server.
+ste_usd = cmc.ticker("steem", limit="3", convert="USD")[0].get("price_usd", "none")
+sbd_usd = cmc.ticker("steem-dollars", limit="3", convert="USD")[0].get("price_usd", "none")
+btc_usd = cmc.ticker("bitcoin", limit="3", convert="USD")[0].get("price_usd", "none")
 
 allowed_channels = ['387030201961545728', #community-review
 ]
@@ -45,7 +51,7 @@ tag_list = ['introduceyourself',
 'science',
 'technology',
 'programming',
-'tutorials']
+]
 
 #########################
 # DEFINE FUNCTIONS HERE #
@@ -83,29 +89,52 @@ async def del_old_mess(hours):
 		async for y in client.logs_from(x,limit=100,before=currtime):
 			await client.delete_message(y)
 
+async def payout(total,sbd,ste):
+	total = float(total) * 0.8 # Currator cut, anywhere between 0.85 and 0.75.
+	totalsbd = str(total * 0.5 * float(sbd))[:6]
+	totalsp = total * 0.5 * float(ste)
+	totalsp = str(totalsp * 1/float(ste))[:6] # SBD is always worth 1$ in the steem blockchain, so price of SBD to price of STE is always 1/STE.
+	payout = str(float(totalsbd) + float(totalsp))[:6]
+	return payout
+
+async def get_info(msg):
+	link = str(msg.content).split(' ')[0]
+	p = Post(link.split('@')[1])
+	if check_age(p,2,48):
+		embed=discord.Embed(color=0xe3b13c)
+		embed.add_field(name="Title", value=str(p.title), inline=False)
+		embed.add_field(name="Author", value=str("@"+p.author), inline=True)
+		embed.add_field(name="Nominator", value=str('<@'+ msg.author.id +'>'), inline=True)
+		embed.add_field(name="Age", value=str(p.time_elapsed())[:-10] +" hours", inline=False)
+		embed.add_field(name="Payout", value=str(p.reward), inline=True)
+		embed.add_field(name="Payout in USD", value=await payout(p.reward,sbd_usd,ste_usd), inline=True)
+		embed.set_footer(text="Marshal - a Steem bot by Vctr#5566 (@jestemkioskiem)")
+		return embed
+	else:
+		age_error = await client.send_message(msg.channel, 'Your post has to be between 2h and 48h old.')
+		await client.delete_message(msg)
+		await asyncio.sleep(6)
+		await client.delete_message(age_error)
+
 # Used to authorize posts and sort them into correct channels.
-async def authorize_post(msg): 
+async def authorize_post(msg, user): 
 	msg_tag = msg.content.split('/')[3]
 	p = Post(msg.content.split('@')[1])
-	botmsg = str('Title: ' + str(p.title) + '\n\nThis post was nominated by **@' + str(msg.author) + '** and authored by **@' + str(p.author) + '**\nStatistics: ' + str(p.time_elapsed())[:-10] + ' hours old. Payout: ' + str(p.reward))	
 
 	if check_age(p,2,48):
-		feedback_message = await client.send_message(msg.channel, botmsg)
-		reaction = await client.wait_for_reaction(['☑'], message=msg, check=is_mod) # Waiting for the emote 
 		await client.delete_message(msg)
-		await client.delete_message(feedback_message)
 
 		if msg_tag in tag_list: # Sorting the item into a correct channel
 			dest_channel = tag_list.index(msg_tag)
 		else:
 			dest_channel = len(tag_list)
 
-		await client.send_message(client.get_channel(channels_list[dest_channel]), content=msg.content + "\n" + botmsg) # Target channel & message for accepted posts.
-	else:
-		age_error = await client.send_message(msg.channel, 'Your post has to be between 2h and 48h old.')
-		await client.delete_message(msg)
-		await asyncio.sleep(6)
-		await client.delete_message(age_error)
+		print(msg)
+		embed = await get_info(msg)
+		await client.send_message(client.get_channel(channels_list[dest_channel]), content=msg.content)
+		await client.send_message(client.get_channel(channels_list[dest_channel]), embed=embed) # Target channel & message for accepted posts.
+		await client.send_message(client.get_channel(channels_list[dest_channel]), content="This post was accepted by <@" + user.id + ">" )
+			
 
 # Returns true if the post's age is between two dates.
 def check_age(post,low,high): 
@@ -115,7 +144,7 @@ def check_age(post,low,high):
 		return False
 
 # Returns true if message's author has a moderating_roles role.
-def is_mod(reaction, user): 
+def is_mod(user): 
 	auth_roles = []
 	for x in user.roles:
 		auth_roles.append(x.name.lower())
@@ -142,7 +171,9 @@ async def on_ready():
 # This is our event check. For simplicity's sake, everything happens here. You may add your own events, but commands are discouraged, for that, edit the command() function instead.
 @client.event
 async def on_message(message):
-	
+	ste_usd = cmc.ticker("steem", limit="3", convert="USD")[0].get("price_usd", "none")
+	sbd_usd = cmc.ticker("steem-dollars", limit="3", convert="USD")[0].get("price_usd", "none")
+	btc_usd = cmc.ticker("bitcoin", limit="3", convert="USD")[0].get("price_usd", "none")
 	await del_old_mess(132)
 
 	if message.content.startswith(client.command_prefix): # Setting up commands. You can add new commands in the commands() function at the top of the code.
@@ -150,17 +181,24 @@ async def on_message(message):
 
 	elif bot_role not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels: # Checking if the poster wasn't the bot and if it was in one of the monitored channels.
 		if message.content.startswith('https://steemit.com') or message.content.startswith('https://busy.org'):
-			await authorize_post(message)
+			embed = await get_info(message)
+			botmsg = await client.send_message(message.channel, embed=embed)
+			react_dict[message.id] = botmsg.id
+
 		else:
-			if not is_mod(reaction=None, user=message.author):
+			if not is_mod(message.author):
 				await client.delete_message(message)
 				link_error = await client.send_message(message.channel, content= '@' + str(message.author) + ' Your link has to start with "https://steemit.com" or "https://busy.org"')
 				await asyncio.sleep(6)
 				await client.delete_message(link_error)	
 
+@client.event
+async def on_reaction_add(reaction, user):
+	if is_mod(user):
+		if reaction.emoji == '☑':
+			await authorize_post(reaction.message, user)
+			botmsg = await client.get_message(reaction.message.channel, react_dict[reaction.message.id])
+			await client.delete_message(botmsg)
+
 if __name__ == '__main__': # Starting the bot.
-	client.run(os.getenv('MANAGEMENT_BOT_TOKEN')
-
-# This was initially built upon BasicBot, although the original code is long gone. Still, I'll give the credit where credit is due. [Repo Link: https://github.com/Habchy/BasicBot]
-
-# This was coded by Vctr#5566, or @jestemkioskiem on steem steem chat and github. Contact him if you have any questions.
+	client.run(os.getenv('TOKEN'))
