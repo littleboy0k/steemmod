@@ -4,6 +4,8 @@ import asyncio
 import datetime
 from steem import Steem
 from steem.post import Post
+from steem.instance import set_shared_steemd_instance
+from steem.steemd import Steemd
 from discord.ext.commands import Bot
 from discord.ext import commands
 from coinmarketcap import Market
@@ -12,6 +14,14 @@ import os
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. @client.command is strongly discouraged, edit your commands into the command() function instead.
 client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = True)
 s = Steem(nodes=["https://api.steemit.com"])
+steemd_nodes = [
+    'https://api.steemit.com/',
+    'https://gtg.steem.house:8090/',
+    'https://steemd.steemitstage.com/',
+    'https://steemd.steemgigs.org/'
+    'https://steemd.steemit.com/',
+]
+set_shared_steemd_instance(Steemd(nodes=steemd_nodes)) # set backup API nodes
 react_dict = {}
 cmc = Market() # Coinmarketcap API call.
 bot_role = 'marshal' # Set a role for all of your bots here. You need to give them such role on the discord server.
