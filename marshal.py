@@ -301,4 +301,4 @@ async def on_reaction_add(reaction, user):
 			await authorize_post(reaction.message)
 
 if __name__ == '__main__': # Starting the bot.
-	client.run(os.getenv('MANAGEMENT_BOT_TOKEN'))
+	client.run(os.getenv('TOKEN'))
