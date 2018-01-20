@@ -4,6 +4,8 @@ import asyncio
 import datetime
 from steem import Steem
 from steem.post import Post
+from steem.instance import set_shared_steemd_instance
+from steem.steemd import Steemd
 from discord.ext.commands import Bot
 from discord.ext import commands
 from coinmarketcap import Market
@@ -11,47 +13,108 @@ import os
 
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. @client.command is strongly discouraged, edit your commands into the command() function instead.
 client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = True)
-s = Steem(nodes=["https://api.steemit.com"])
-react_dict = {}
+
+s = Steem()
+steemd_nodes = [
+    'https://api.steemit.com/',
+    'https://gtg.steem.house:8090/',
+    'https://steemd.steemitstage.com/',
+    'https://steemd.steemgigs.org/'
+    'https://steemd.steemit.com/',
+]
+set_shared_steemd_instance(Steemd(nodes=steemd_nodes)) # set backup API nodes
+
 cmc = Market() # Coinmarketcap API call.
-bot_role = 'marshal' # Set a role for all of your bots here. You need to give them such role on the discord server.
 ste_usd = cmc.ticker("steem", limit="3", convert="USD")[0].get("price_usd", "none")
 sbd_usd = cmc.ticker("steem-dollars", limit="3", convert="USD")[0].get("price_usd", "none")
 btc_usd = cmc.ticker("bitcoin", limit="3", convert="USD")[0].get("price_usd", "none")
 
+react_dict = {}
+
+bot_role = 'marshal' # Set a role for all of your bots here. You need to give them such role on the discord server.
+
 allowed_channels = ['387030201961545728', #community-review
+'399691348028030989' # testing:
 ]
 
 moderating_roles = ['developers', # Keep them lower case.
 'moderators']
 
-channels_list = ['389762510779187200', #introduceyourself
-'389608804972756993', #steemit
-'389762038408282112', #bitcoin
-'389762302330535946', #cryptocurrency
-'389762891823316992', #blog
-'389761959014432778', #steem
-'389764215537270787', #crypto
-'389764282700660737', #health	
-'389764314313129984', #science
-'389890366427627520', #technology
-'389890644551794688', #programming
-'389890578499764226', #tutorials
-'389764366456586240' #all_other
+# channels
+channels = [
+	{
+		'name': 'introduceyourself',
+		'id_community': '393994169955385355',
+		'id_verified': '389762510779187200'
+	},
+	{
+		'name': 'steemit',
+		'id_community': '393999443877429248',
+		'id_verified': '389608804972756993'
+	},
+	{
+		'name': 'bitcoin',
+		'id_community': '393999470427242497',
+		'id_verified': '389762038408282112'
+	},
+	{
+		'name': 'cryptocurrency',
+		'id_community': '393999513012011009',
+		'id_verified': '389762302330535946'
+	},
+	{
+		'name': 'blog',
+		'id_community': '393999532066865153',
+		'id_verified': '389762891823316992'
+	},
+	{
+		'name': 'steem',
+		'id_community': '393999563415093257',
+		'id_verified': '389761959014432778'
+	},
+	{
+		'name': 'crypto',
+		'id_community': '393999585397440522',
+		'id_verified': '389764215537270787'
+	},
+	{
+		'name': 'health',
+		'id_community': '393999638174367746',
+		'id_verified': '389764282700660737'
+	},
+	{
+		'name': 'science',
+		'id_community': '393999658411622401',
+		'id_verified': '389764314313129984'
+	},
+	{
+		'name': 'technology',
+		'id_community': '393999682889842688',
+		'id_verified': '389890366427627520'
+	},
+	{
+		'name': 'programming',
+		'id_community': '393999709796171777',
+		'id_verified': '389890644551794688'
+	},
+	{
+		'name': 'tutorials',
+		'id_community': '393999737864454144',
+		'id_verified': '389890578499764226'
+	},
+	{
+		'name': 'all_other',
+		'id_community': '393999762820694017',
+		'id_verified': '389764366456586240'
+	},
+	# testing:
+	{
+		'name': 'tematygodnia',
+		'id_community': '403670427442085888',
+		'id_verified': '403284221713711105'
+	}
 ]
 
-tag_list = ['introduceyourself',
-'steemit',
-'bitcoin',
-'cryptocurrency',
-'blog',
-'steem',
-'crypto',
-'health',
-'science',
-'technology',
-'programming',
-]
 
 #########################
 # DEFINE FUNCTIONS HERE #
@@ -61,8 +124,10 @@ tag_list = ['introduceyourself',
 async def command(msg,command):
 	command = str(command)
 	command = command[1:]
+	
 	if command.startswith('ping'):
 		await client.send_message(msg.channel,":ping_pong: Pong!")
+		
 	elif command.startswith('users'):
 		list_of_users = []
 		users_online = client.get_all_members()
@@ -72,18 +137,18 @@ async def command(msg,command):
 
 	elif command.startswith('hey'):
 		await client.send_message(msg.channel, "Hey, utopian!")
-	
+
 	else:
 		command_error = await client.send_message(msg.channel, "Incorrect command.")
 		await asyncio.sleep(6)
 		await client.delete_message(command_error)
 
-# Deletes posts in channel_list channels older than given hours.
+# Deletes posts in channels older than given hours.
 async def del_old_mess(hours): 
 	currtime = datetime.datetime.now() - datetime.timedelta(hours=hours)
 	chn = []
 	for x in client.get_all_channels():
-		if x.id in channels_list:
+		if x.id in [channel['id_community'] for channel in channels]: #channels_list:
 			chn.append(x)
 	for x in chn:
 		async for y in client.logs_from(x,limit=100,before=currtime):
@@ -116,24 +181,63 @@ async def get_info(msg):
 		await asyncio.sleep(6)
 		await client.delete_message(age_error)
 
-# Used to authorize posts and sort them into correct channels.
-async def authorize_post(msg, user): 
+
+# Used to sort post into correct channels.
+async def sort_post(msg):
+	dest_channel = None
 	msg_tag = msg.content.split('/')[3]
 	p = Post(msg.content.split('@')[1])
 
-	if check_age(p,2,48):
-		await client.delete_message(msg)
+	for channel in channels:
+		if channel['name'] == msg_tag:
+			dest_channel = channel['id_community']
+			break
+	if dest_channel == None:
+		dest_channel = channels[len(channels)-1]['id_community'] # others as default
 
-		if msg_tag in tag_list: # Sorting the item into a correct channel
-			dest_channel = tag_list.index(msg_tag)
-		else:
-			dest_channel = len(tag_list)
+	embed = await get_info(msg)
+	if embed:
+		new_msg = await client.send_message(client.get_channel(dest_channel), content=msg.content) # send original message
+		embed_msg = await client.send_message(client.get_channel(dest_channel), embed=embed) # send embed
+		comment_msg = await client.send_message(client.get_channel(dest_channel), content="This post was linked by <@" + msg.author.id + ">" ) # send comment
 
-		print(msg)
-		embed = await get_info(msg)
-		await client.send_message(client.get_channel(channels_list[dest_channel]), content=msg.content)
-		await client.send_message(client.get_channel(channels_list[dest_channel]), embed=embed) # Target channel & message for accepted posts.
-		await client.send_message(client.get_channel(channels_list[dest_channel]), content="This post was accepted by <@" + user.id + ">" )
+		react_dict[new_msg.id] = [new_msg.id, embed_msg.id, comment_msg.id] # store new messages ids
+		await client.delete_message(msg) # delete old message
+		
+		if dest_channel:
+			response = await client.send_message(msg.channel, "Post was moved to channel <#" + dest_channel + ">")
+			await asyncio.sleep(6)
+			await client.delete_message(response)
+
+
+# Used to authorize posts and sort them into correct channels.
+async def authorize_post(msg): 
+	dest_channel = None
+	msg_tag = msg.content.split('/')[3]
+	p = Post(msg.content.split('@')[1])
+	
+	for channel in channels:
+		if channel['name'] == msg_tag:
+			dest_channel = channel['id_verified']
+			break
+	if dest_channel == None:
+		dest_channel = channels[len(channels)-1]['id_community'] # others as default
+
+	embed = await get_info(msg)
+	if embed:
+		await client.send_message(client.get_channel(dest_channel), content=msg.content) # send original message
+		await client.send_message(client.get_channel(dest_channel), embed=embed) # send embed
+		await client.send_message(client.get_channel(dest_channel), content="This post was accepted by <@" + msg.author.id + ">" ) # send comment
+		
+		# delete old messages
+		for msg_id in react_dict[msg.id]:
+			msg = await client.get_message(msg.channel, msg_id)
+			await client.delete_message(msg)
+		
+		if dest_channel:
+			response = await client.send_message(msg.channel, "Post was moved to channel <#" + dest_channel + ">")
+			await asyncio.sleep(6)
+			await client.delete_message(response)
 			
 
 # Returns true if the post's age is between two dates.
@@ -181,9 +285,7 @@ async def on_message(message):
 
 	elif bot_role not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels: # Checking if the poster wasn't the bot and if it was in one of the monitored channels.
 		if message.content.startswith('https://steemit.com') or message.content.startswith('https://busy.org'):
-			embed = await get_info(message)
-			botmsg = await client.send_message(message.channel, embed=embed)
-			react_dict[message.id] = botmsg.id
+			await sort_post(message)
 
 		else:
 			if not is_mod(message.author):
@@ -195,10 +297,8 @@ async def on_message(message):
 @client.event
 async def on_reaction_add(reaction, user):
 	if is_mod(user):
-		if reaction.emoji == '☑':
-			await authorize_post(reaction.message, user)
-			botmsg = await client.get_message(reaction.message.channel, react_dict[reaction.message.id])
-			await client.delete_message(botmsg)
+		if reaction.emoji == '☑' and reaction.message.channel.id in [channel['id_community'] for channel in channels]:
+			await authorize_post(reaction.message)
 
 if __name__ == '__main__': # Starting the bot.
 	client.run(os.getenv('TOKEN'))
