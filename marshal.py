@@ -33,7 +33,7 @@ react_dict = {}
 
 bot_role = 'marshal' # Set a role for all of your bots here. You need to give them such role on the discord server.
 
-allowed_channels = ['387030201961545728', #community-review
+allowed_channels = ['402402513321721857', #review-linkdrop
 '399691348028030989' # testing:
 ]
 
@@ -107,12 +107,12 @@ channels = [
 		'id_community': '393999762820694017',
 		'id_verified': '389764366456586240'
 	},
-	# testing:
-	{
-		'name': 'tematygodnia',
-		'id_community': '403670427442085888',
-		'id_verified': '403284221713711105'
-	}
+	# # testing:
+	# {
+		# 'name': 'tematygodnia',
+		# 'id_community': '403670427442085888',
+		# 'id_verified': '403284221713711105'
+	# }
 ]
 
 
@@ -173,7 +173,6 @@ async def get_info(msg):
 		embed.add_field(name="Age", value=str(p.time_elapsed())[:-10] +" hours", inline=False)
 		embed.add_field(name="Payout", value=str(p.reward), inline=True)
 		embed.add_field(name="Payout in USD", value=await payout(p.reward,sbd_usd,ste_usd), inline=True)
-		embed.set_footer(text="Marshal - a Steem bot by Vctr#5566 (@jestemkioskiem)")
 		return embed
 	else:
 		age_error = await client.send_message(msg.channel, 'Your post has to be between 2h and 48h old.')
@@ -194,12 +193,12 @@ async def sort_post(msg):
 			break
 	if dest_channel == None:
 		dest_channel = channels[len(channels)-1]['id_community'] # others as default
-
+		
 	embed = await get_info(msg)
 	if embed:
 		new_msg = await client.send_message(client.get_channel(dest_channel), content=msg.content) # send original message
 		embed_msg = await client.send_message(client.get_channel(dest_channel), embed=embed) # send embed
-		comment_msg = await client.send_message(client.get_channel(dest_channel), content="This post was linked by <@" + msg.author.id + ">" ) # send comment
+		comment_msg = await client.send_message(client.get_channel(dest_channel), content="This post was submitted in the server by <@" + msg.author.id + ">" ) # send comment
 
 		react_dict[new_msg.id] = [new_msg.id, embed_msg.id, comment_msg.id] # store new messages ids
 		await client.delete_message(msg) # delete old message
@@ -211,7 +210,7 @@ async def sort_post(msg):
 
 
 # Used to authorize posts and sort them into correct channels.
-async def authorize_post(msg): 
+async def authorize_post(msg, user): 
 	dest_channel = None
 	msg_tag = msg.content.split('/')[3]
 	p = Post(msg.content.split('@')[1])
@@ -221,13 +220,13 @@ async def authorize_post(msg):
 			dest_channel = channel['id_verified']
 			break
 	if dest_channel == None:
-		dest_channel = channels[len(channels)-1]['id_community'] # others as default
+		dest_channel = channels[len(channels)-1]['id_verified'] # others as default
 
 	embed = await get_info(msg)
 	if embed:
 		await client.send_message(client.get_channel(dest_channel), content=msg.content) # send original message
 		await client.send_message(client.get_channel(dest_channel), embed=embed) # send embed
-		await client.send_message(client.get_channel(dest_channel), content="This post was accepted by <@" + msg.author.id + ">" ) # send comment
+		await client.send_message(client.get_channel(dest_channel), content="This post was accepted by <@" + user.id + ">" ) # send comment
 		
 		# delete old messages
 		for msg_id in react_dict[msg.id]:
@@ -298,7 +297,7 @@ async def on_message(message):
 async def on_reaction_add(reaction, user):
 	if is_mod(user):
 		if reaction.emoji == '☑' and reaction.message.channel.id in [channel['id_community'] for channel in channels]:
-			await authorize_post(reaction.message)
+			await authorize_post(reaction.message, user)
 
 if __name__ == '__main__': # Starting the bot.
 	client.run(os.getenv('TOKEN'))
