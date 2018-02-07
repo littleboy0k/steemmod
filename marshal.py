@@ -27,11 +27,10 @@ set_shared_steemd_instance(Steemd(nodes=steemd_nodes)) # set backup API nodes
 cmc = Market() # Coinmarketcap API call.
 ste_usd = cmc.ticker("steem", limit="3", convert="USD")[0].get("price_usd", "none")
 sbd_usd = cmc.ticker("steem-dollars", limit="3", convert="USD")[0].get("price_usd", "none")
-btc_usd = cmc.ticker("bitcoin", limit="3", convert="USD")[0].get("price_usd", "none")
 
 react_dict = {}
 
-bot_role = 'marshal' # Set a role for all of your bots here. You need to give them such role on the discord server.
+bot_role = 'bots' # Set a role for all of your bots here. You need to give them such role on the discord server.
 
 allowed_channels = ['402402513321721857', #review-linkdrop
 '399691348028030989' # testing:
@@ -115,6 +114,10 @@ channels = [
 	# }
 ]
 
+link_only_channels = [ # Put all the channels that are exclusively for sharing links into this list.
+'402402513321721857' # review_linkdrop
+]
+
 
 #########################
 # DEFINE FUNCTIONS HERE #
@@ -165,20 +168,14 @@ async def payout(total,sbd,ste):
 async def get_info(msg):
 	link = str(msg.content).split(' ')[0]
 	p = Post(link.split('@')[1])
-	if check_age(p,2,48):
-		embed=discord.Embed(color=0xe3b13c)
-		embed.add_field(name="Title", value=str(p.title), inline=False)
-		embed.add_field(name="Author", value=str("@"+p.author), inline=True)
-		embed.add_field(name="Nominator", value=str('<@'+ msg.author.id +'>'), inline=True)
-		embed.add_field(name="Age", value=str(p.time_elapsed())[:-10] +" hours", inline=False)
-		embed.add_field(name="Payout", value=str(p.reward), inline=True)
-		embed.add_field(name="Payout in USD", value=await payout(p.reward,sbd_usd,ste_usd), inline=True)
-		return embed
-	else:
-		age_error = await client.send_message(msg.channel, 'Your post has to be between 2h and 48h old.')
-		await client.delete_message(msg)
-		await asyncio.sleep(6)
-		await client.delete_message(age_error)
+	embed=discord.Embed(color=0xe3b13c)
+	embed.add_field(name="Title", value=str(p.title), inline=False)
+	embed.add_field(name="Author", value=str("@"+p.author), inline=True)
+	embed.add_field(name="Nominator", value=str('<@'+ msg.author.id +'>'), inline=True)
+	embed.add_field(name="Age", value=str(p.time_elapsed())[:-10] +" hours", inline=False)
+	embed.add_field(name="Payout", value=str(p.reward), inline=True)
+	embed.add_field(name="Payout in USD", value=await payout(p.reward,sbd_usd,ste_usd), inline=True)
+	return embed
 
 
 # Used to sort post into correct channels.
@@ -238,12 +235,45 @@ async def authorize_post(msg, user):
 			await asyncio.sleep(6)
 			await client.delete_message(response)
 			
+async def is_link(msg):
+	if bot_role not in [y.name.lower() for y in msg.author.roles] and msg.channel.id in link_only_channels:
+		if msg.content.startswith("https://steemit.com"):
+			return True
+		else:
+			await client.delete_message(msg)
+			response = await client.send_message(msg.channel, "Only links starting with https://steemit.com are allowed in this channel.")
+			await asyncio.sleep(6)
+			await client.delete_message(response)
+
+
+async def check_reward(msg):
+	link = str(msg.content).split(' ')[0]
+	p = Post(link.split('@')[1])
+	
+	reward = float(str(p.reward).replace(" SBD", ""))
+
+	if reward > 30:
+		await client.delete_message(msg)
+		response = await client.send_message(msg.channel, "Your post already has a high payout. Only posts with lower than 30 SBD payout are allowed.")
+		await asyncio.sleep(6)
+		await client.delete_message(response)
+		return False
+	else:
+		return True	
+
 
 # Returns true if the post's age is between two dates.
-def check_age(post,low,high): 
-	if post.time_elapsed() > datetime.timedelta(hours=low) and post.time_elapsed() < datetime.timedelta(hours=high):
+async def check_age(msg,low,high):
+	link = str(msg.content).split(' ')[0]
+	p = Post(link.split('@')[1])
+
+	if p.time_elapsed() > datetime.timedelta(hours=low) and p.time_elapsed() < datetime.timedelta(hours=high):
 		return True
 	else:
+		age_error = await client.send_message(msg.channel, 'Your post has to be between 2h and 48h old.')
+		await client.delete_message(msg)
+		await asyncio.sleep(6)
+		await client.delete_message(age_error)
 		return False
 
 # Returns true if message's author has a moderating_roles role.
@@ -276,22 +306,18 @@ async def on_ready():
 async def on_message(message):
 	ste_usd = cmc.ticker("steem", limit="3", convert="USD")[0].get("price_usd", "none")
 	sbd_usd = cmc.ticker("steem-dollars", limit="3", convert="USD")[0].get("price_usd", "none")
-	btc_usd = cmc.ticker("bitcoin", limit="3", convert="USD")[0].get("price_usd", "none")
 	await del_old_mess(132)
+
+	if await is_link(message):
+		if await check_age(message, 2, 48):
+			await check_reward(message)
 
 	if message.content.startswith(client.command_prefix): # Setting up commands. You can add new commands in the commands() function at the top of the code.
 		await command(message, message.content)
 
 	elif bot_role not in [y.name.lower() for y in message.author.roles] and message.channel.id in allowed_channels: # Checking if the poster wasn't the bot and if it was in one of the monitored channels.
-		if message.content.startswith('https://steemit.com') or message.content.startswith('https://busy.org'):
+		if message.content.startswith('https://steemit.com'):
 			await sort_post(message)
-
-		else:
-			if not is_mod(message.author):
-				await client.delete_message(message)
-				link_error = await client.send_message(message.channel, content= '@' + str(message.author) + ' Your link has to start with "https://steemit.com" or "https://busy.org"')
-				await asyncio.sleep(6)
-				await client.delete_message(link_error)	
 
 @client.event
 async def on_reaction_add(reaction, user):
