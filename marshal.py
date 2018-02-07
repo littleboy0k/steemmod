@@ -13,12 +13,8 @@ import os
 
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. @client.command is strongly discouraged, edit your commands into the command() function instead.
 client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = True)
-<<<<<<< HEAD
 
 s = Steem()
-=======
-s = Steem(nodes=["https://api.steemit.com"])
->>>>>>> af012bcc12b1f9d4dfb9f816ba19203638f7caec
 steemd_nodes = [
     'https://api.steemit.com/',
     'https://gtg.steem.house:8090/',
@@ -27,32 +23,17 @@ steemd_nodes = [
     'https://steemd.steemit.com/',
 ]
 set_shared_steemd_instance(Steemd(nodes=steemd_nodes)) # set backup API nodes
-<<<<<<< HEAD
 
 cmc = Market() # Coinmarketcap API call.
-=======
->>>>>>> af012bcc12b1f9d4dfb9f816ba19203638f7caec
 ste_usd = cmc.ticker("steem", limit="3", convert="USD")[0].get("price_usd", "none")
 sbd_usd = cmc.ticker("steem-dollars", limit="3", convert="USD")[0].get("price_usd", "none")
 
 react_dict = {}
-<<<<<<< HEAD
 
-bot_role = 'bots' # Set a role for all of your bots here. You need to give them such role on the discord server.
+bot_role = 'marshal' # Set a role for all of your bots here. You need to give them such role on the discord server.
 
 allowed_channels = ['402402513321721857', #review-linkdrop
 '399691348028030989' # testing:
-=======
-cmc = Market() # Coinmarketcap API call.
-
-SERVER_ID = '368472502139093002' # Put Discord server's ID
-ROLE_NAME = '' # Put Discord server's granted role name
-bot_role = 'marshal' # Set a role for all of your bots here. You need to give them such role on the discord server.
-
-minimum_payment = 1.000 # 1 STEEM
-
-allowed_channels = ['387030201961545728', #community-review
->>>>>>> af012bcc12b1f9d4dfb9f816ba19203638f7caec
 ]
 
 moderating_roles = ['developers', # Keep them lower case.
@@ -137,12 +118,6 @@ link_only_channels = [ # Put all the channels that are exclusively for sharing l
 '402402513321721857' # review_linkdrop
 ]
 
-<<<<<<< HEAD
-=======
-registered_users = {
-	
-}
->>>>>>> af012bcc12b1f9d4dfb9f816ba19203638f7caec
 
 #########################
 # DEFINE FUNCTIONS HERE #
@@ -155,7 +130,6 @@ async def command(msg,command):
 	
 	if command.startswith('ping'):
 		await client.send_message(msg.channel,":ping_pong: Pong!")
-<<<<<<< HEAD
 		
 	elif command.startswith('users'):
 		list_of_users = []
@@ -167,11 +141,6 @@ async def command(msg,command):
 	elif command.startswith('hey'):
 		await client.send_message(msg.channel, "Hey, utopian!")
 
-=======
-	elif command.lower().startswith('register'):
-		await client.send_message(msg.author, "<@" + msg.author.id + ">, to register send transaction for " + str(minimum_payment) + " STEEM to @" + BOT_USER_NAME + " with memo: " + msg.author.id)
-	
->>>>>>> af012bcc12b1f9d4dfb9f816ba19203638f7caec
 	else:
 		command_error = await client.send_message(msg.channel, "Incorrect command.")
 		await asyncio.sleep(6)
@@ -319,47 +288,6 @@ def is_mod(user):
 			break
 		else:
 			return False
-
-async def check_for_payments():
-	await client.wait_until_ready()
-	role = discord.utils.get(client.get_server(SERVER_ID).roles, name=ROLE_NAME)
-	
-	while not client.is_closed:
-		transfers = account.history_reverse(filter_by='transfer')
-		now = datetime.datetime.now() - datetime.timedelta(days=7) # check only last 7 days
-		
-		for t in transfers:
-				
-			#print('Received from: ' + t['from'] + ' +' + t['amount'] + '. Memo: ' + t['memo'] + ' at ' + t['timestamp'])
-			
-			if now > datetime.datetime.strptime(t['timestamp'], "%Y-%m-%dT%H:%M:%S"):
-				break
-				
-			if t['from'] == BOT_USER_NAME: # skip mine transactions
-				continue
-			
-			if not t['memo'].isdigit(): # skip invalid MEMO
-				continue
-			
-			if 'STEEM' in t['amount']: # STEEM payment only?
-				payment = float(t['amount'].replace("STEEM", ""))
-				if payment >= minimum_payment:
-					member = discord.utils.get(client.get_server(SERVER_ID).members, id=t['memo']) # get member by id
-					if role in member.roles:
-						continue
-
-					registered_users[t['from']] = msg.author.id # Storing registered users in a dictionary for later database functionality.
-					f = open("users.txt", "a")
-					for x in registered_users:
-						f.write(str(x))
-						f.write(":")
-						f.write(str(a[x]))
-						f.write("\n")
-
-					await client.add_roles(member, role) # add role to member
-					await client.send_message(member, "<@" + member.id + ">, You have been successfully registered :)")
-				
-	await asyncio.sleep(60) # check every minute
 
 ######################
 # DEFINE EVENTS HERE #
