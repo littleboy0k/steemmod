@@ -1,14 +1,17 @@
-# steem-moderation
+# Steem Moderation
 
-Repository of open source tools used by steem moderation community.
+Repository of open source tools used by steem moderation community. 
+
 The repository currently includes:
-* *Marshal* the server manager
+* *Marshal* the server manager bot
 * *stbot* the payout calculator
 
 ## Requirements:
+
 #### Python:
 * Written in Python 3.6.3
 * Requires at least Python3
+
 #### Directories:
 * steem API ([steem-python](https://github.com/steemit/steem-python))
 * discord API ([discord.py](https://github.com/Rapptz/discord.py))
