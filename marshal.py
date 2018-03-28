@@ -12,7 +12,7 @@ from coinmarketcap import Market
 import os
 
 # Here you can modify the bot's prefix and description and wether it sends help in direct messages or not. @client.command is strongly discouraged, edit your commands into the command() function instead.
-client = Bot(description="Server-Management-Bot", command_prefix='!', pm_help = True)
+client = Bot(description="Marshal", command_prefix='!', pm_help = True)
 
 s = Steem()
 steemd_nodes = [
