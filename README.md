@@ -35,7 +35,7 @@ The repository currently includes:
 * Sort accepted posts into correct channels by the tag they were posted under;
 * Remove accepted posts older than x hours;
 
-# stbot
+# Stbot
 ![stbot.png](https://i.imgur.com/9kev1YB.png)
 
 **stbot**, the payout calculator, was built for the steemit moderation project by [Emre](https://github.com/emre) (https://steemit.com/@emrebeyler).
