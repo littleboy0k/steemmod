@@ -1,6 +1,6 @@
 [
-  'blacklisteduser1',  /*  proof of his actions that lead him to be blacklisted /
-  'user2',   /  proof of his actions that lead him to be blacklisted */
+  'blacklisteduser1',  //  proof of his actions that lead him to be blacklisted 
+  'user2',   
   'user3', 
   'user5',
 ]
